@@ -1,5 +1,25 @@
-
+<script src="https://sdk.mercadopago.com/js/v2"></script>
 <script src="https://www.mercadopago.com/v2/security.js" view="item"></script>
+<script>
+window.onload = function loadMP()
+{
+const mp = new MercadoPago('APP_USR-ff96fe80-6866-4888-847e-c69250754d38', {
+    locale: 'es-AR'
+});
+
+mp.checkout({
+    preference: {
+    id: document.getElementById('checkId').value,
+    },
+    render: {
+    container: '.cho-container',
+    label: 'Pagar',
+    }
+});
+}
+loadMP();
+</script>
+
 <div class="as-search-wrapper" role="main">
     <div class="as-navtuck-wrapper">
         <div class="as-l-fullwidth  as-navtuck" data-events="event52">
@@ -73,27 +93,22 @@
                                 <div class="as-producttile-title">
                                     <h3 class="as-producttile-name">
                                         <p class="as-producttile-tilelink">
-                                            <span data-ase-truncate="2"> {{ title }} </span>
+                                            <span data-ase-truncate="2"> Modelo: {{ title }} </span>
                                         </p>
-
                                     </h3>
                                 </div>
-                                <h3 >
-                                    {{ price }}
-                                </h3>
-                                <h3 >
-                                    {{ unit }}
-                                </h3>
+                                <div>
+                                <h4 >
+                                Precio: ${{ price }}
+                                </h4>
+                                </div>
+                                <div>
+                                Cantidad: {{ unit }}
+                                </h4>
+                                <input id="checkId" type="hidden" value="{{ checkoutId }}">
+                                </div>
                             </div>
-                            
-                                            <form action="/payform" method="get">
-                                                <input type="hidden" name="title" value={{ title }}>
-                                                <input type="hidden" name="price" value={{ price }}>
-                                                <input type="hidden" name="unit" value= {{ unit }}>
-                                                <button type="submit" class="mercadopago-button" formmethod="get">Comprar</button>
-                                                
-                                            </form>
-                         
+                            <div class="cho-container"></div>
                         </div>
                     </div>
                 </div>
@@ -101,4 +116,3 @@
         </div>
     </div>
 </div>
-   

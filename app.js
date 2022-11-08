@@ -4,10 +4,11 @@ var port = process.env.PORT || 3000;
 
 var app = express();
 
-var mercadopago = require("mercadopago");
-mercadopago.configurations.setAccessToken(
-  "APP_USR-7198724548949524-111718-2b297f8c7eb619336bf887c5bb4b33e9-1021172797"
-);
+const mercadopago = require("mercadopago");
+mercadopago.configure({
+  access_token: "APP_USR-8709825494258279-092911-227a84b3ec8d8b30fff364888abeb67a-1160706432",
+  integrator_id: "dev_24c65fb163bf11ea96500242ac130004",
+});
 
 app.engine("handlebars", exphbs());
 app.set("view engine", "handlebars");
@@ -21,43 +22,73 @@ app.get("/", function (req, res) {
 });
 
 app.get("/detail", function (req, res) {
-  res.render("detail", req.query);
-});
 
-app.get("/payform", function (req, res) {
-  res.render("payform.handlebars", req.query);
-});
-
-app.get("/process_payment", function (req, res) {
-  var payment_data = {
-    transaction_amount: Number(req.body.transactionAmount),
-    token: req.body.token,
-    description: req.body.description,
-    installments: Number(req.body.installments),
-    payment_method_id: req.body.paymentMethodId,
-    issuer_id: req.body.issuer,
+  let preference = {
+    items: [
+      {
+        id: "1234",
+        title: req.query.title,
+        description: req.query.title,
+        picture_url: req.query.img,
+        quantity: 1,
+        unit_price: Number(req.query.price),
+      },
+    ],
     payer: {
-      email: req.body.email,
-      identification: {
-        type: req.body.docType,
-        number: req.body.docNumber,
+      name: "Lalo",
+      surname: "Landa",
+      email: "test_user_36961754@testuser.com",
+      phone: {
+        area_code: "11",
+        number: 22223333,
+      },
+      identification: {},
+      address: {
+        street_name: "Falsa",
+        street_number: 123,
+        zip_code: "1638",
       },
     },
-    notification_url: "https://engipm4kflp8a.x.pipedream.net",
+    payment_methods: {
+      excluded_payment_methods: [
+        {
+          id: "visa",
+        },
+      ],
+      installments: 6,
+    },
+    back_urls: {
+      success: req.get("host") + "/success",
+      failure: req.get("host") + "/failure",
+      pending: req.get("host") + "/pending",
+    },
+    auto_return: "approved",
+    notification_url: "https://envynpazrbxy.x.pipedream.net",
+    external_reference: "juanccassano@gmail.com",
   };
 
-  mercadopago.payment
-    .save(payment_data)
+  mercadopago.preferences
+    .create(preference)
     .then(function (response) {
-      res.status(response.status).json({
-        status: response.body.status,
-        status_detail: response.body.status_detail,
-        id: response.body.id,
-      });
+      req.query.checkoutId = response.body.id;
+      req.query.init_point = response.body.init_point;
+      res.render("detail", req.query);
     })
     .catch(function (error) {
-      res.status(response.status).send(error);
+      console.log(error);
     });
+});
+
+app.get("/failure", function (req, res) {
+  res.render("failure", req.query);
+});
+
+app.get("/success", function (req, res) {
+  res.render("success", req.query);
+});
+
+app.get("/pending", function (req, res) {
+  res.render("pending", req.query);
 });
 
 app.listen(port);
